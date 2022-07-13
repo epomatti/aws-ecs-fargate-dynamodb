@@ -32,7 +32,7 @@ resource "aws_dynamodb_table" "tasks" {
   }
 }
 
-### 
+### VPC ###
 
 resource "aws_vpc" "main" {
   cidr_block       = "10.0.0.0/16"
@@ -85,7 +85,7 @@ resource "aws_subnet" "main" {
   map_public_ip_on_launch = true
 }
 
-### ECS ###
+### Permissions ###
 
 resource "aws_iam_role" "main" {
   name = "app-test-role"
@@ -98,7 +98,7 @@ resource "aws_iam_role" "main" {
         Effect = "Allow"
         Sid    = ""
         Principal = {
-          Service = "elasticbeanstalk.amazonaws.com"
+          Service = "ecs-tasks.amazonaws.com"
         }
       },
     ]
@@ -161,6 +161,14 @@ resource "aws_ecs_task_definition" "service" {
   ])
 }
 
+resource "aws_lb_target_group" "main" {
+  name        = "main"
+  port        = 80
+  protocol    = "HTTP"
+  target_type = "ip"
+  vpc_id      = aws_vpc.main.id
+}
+
 resource "aws_ecs_service" "nginx-service" {
   name            = "nginx"
   cluster         = aws_ecs_cluster.main.id
@@ -170,6 +178,14 @@ resource "aws_ecs_service" "nginx-service" {
   network_configuration {
     subnets          = [aws_subnet.main.id]
     assign_public_ip = true
+  }
+
+  
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.main.arn
+    container_name   = "nginx"
+    container_port   = 80
   }
 
 }
