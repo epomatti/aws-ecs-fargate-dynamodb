@@ -14,6 +14,25 @@ provider "aws" {
   region = "sa-east-1"
 }
 
+### Variables ###
+
+variable "availability_zone_1" {
+  default = "sa-east-1a"
+  type    = string
+}
+
+variable "availability_zone_2" {
+  default = "sa-east-1b"
+  type    = string
+}
+
+variable "availability_zone_3" {
+  default = "sa-east-1c"
+  type    = string
+}
+
+### DynamoDB ###
+
 resource "aws_dynamodb_table" "tasks" {
   name           = "Tasks"
   billing_mode   = "PAY_PER_REQUEST"
@@ -82,24 +101,27 @@ resource "aws_security_group_rule" "egress_all" {
 }
 
 resource "aws_subnet" "subnet1" {
-  vpc_id     = aws_vpc.main.id
-  cidr_block = "10.0.0.0/24"
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.0.0/24"
+  availability_zone = var.availability_zone_1
 
   # Auto-assign public IPv4 address
   map_public_ip_on_launch = true
 }
 
 resource "aws_subnet" "subnet2" {
-  vpc_id     = aws_vpc.main.id
-  cidr_block = "10.0.10.0/24"
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.10.0/24"
+  availability_zone = var.availability_zone_2
 
   # Auto-assign public IPv4 address
   map_public_ip_on_launch = true
 }
 
 resource "aws_subnet" "subnet3" {
-  vpc_id     = aws_vpc.main.id
-  cidr_block = "10.0.20.0/24"
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.20.0/24"
+  availability_zone = var.availability_zone_3
 
   # Auto-assign public IPv4 address
   map_public_ip_on_launch = true
