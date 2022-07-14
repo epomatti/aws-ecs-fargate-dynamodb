@@ -84,8 +84,8 @@ resource "aws_default_security_group" "main" {
 
 resource "aws_security_group_rule" "ingress_http" {
   type              = "ingress"
-  from_port         = 8080
-  to_port           = 8080
+  from_port         = 0
+  to_port           = 65535
   protocol          = "tcp"
   cidr_blocks       = ["0.0.0.0/0"]
   security_group_id = aws_default_security_group.main.id
@@ -252,7 +252,6 @@ resource "aws_ecs_service" "main" {
     assign_public_ip = false
   }
 
-  // TODO: Container Name
   load_balancer {
     target_group_arn = aws_lb_target_group.main.arn
     container_name   = "php-tasks"
