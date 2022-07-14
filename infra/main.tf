@@ -191,21 +191,27 @@ resource "aws_ecs_task_definition" "main" {
 #   vpc_id      = aws_vpc.main.id
 # }
 
-# resource "aws_ecs_service" "nginx-service" {
-#   name            = "nginx"
-#   cluster         = aws_ecs_cluster.main.id
-#   task_definition = aws_ecs_task_definition.service.arn
-#   desired_count   = 1
+resource "aws_ecs_service" "main" {
+  name            = "nginx"
+  cluster         = aws_ecs_cluster.main.id
+  task_definition = aws_ecs_task_definition.main.arn
+  desired_count   = 1
 
-#   network_configuration {
-#     subnets          = [aws_subnet.subnet1.id, aws_subnet.subnet2.id, aws_subnet.subnet3.id]
-#     assign_public_ip = true
-#   }
+  deployment_minimum_healthy_percent = 100
+  deployment_maximum_percent         = 200
 
-#   load_balancer {
-#     target_group_arn = aws_lb_target_group.main.arn
-#     container_name   = "nginx"
-#     container_port   = 80
-#   }
+  network_configuration {
+    subnets          = [aws_subnet.subnet1.id, aws_subnet.subnet2.id, aws_subnet.subnet3.id]
+    assign_public_ip = true
+  }
 
-# }
+  # load_balancer {
+  #   target_group_arn = aws_lb_target_group.main.arn
+  #   container_name   = "nginx"
+  #   container_port   = 80
+  # }
+
+  lifecycle {
+    ignore_changes = [desired_count]
+  }
+}
