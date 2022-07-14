@@ -166,8 +166,8 @@ resource "aws_ecs_task_definition" "main" {
   memory                   = 2048
   container_definitions = jsonencode([
     {
-      name      = "nginx"
-      image     = "docker.io/nginx:latest"
+      name      = "php-tasks"
+      image     = "docker.io/epomatti/aws-ecs-fargate-dynamodb-app:latest"
       essential = true
       portMappings = [
         {
@@ -189,13 +189,38 @@ resource "aws_lb_target_group" "main" {
   protocol    = "HTTP"
   target_type = "ip"
   vpc_id      = aws_vpc.main.id
+
+  # TODO: Health Check
+  # health_check {
+  #   enabled = true
+  #   path    = "/"
+  # }
+}
+
+resource "aws_lb" "main" {
+  name               = "lb-tasks"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [aws_default_security_group.main.id]
+  subnets            = [aws_subnet.subnet1.id, aws_subnet.subnet2.id, aws_subnet.subnet3.id]
+}
+
+resource "aws_lb_listener" "main" {
+  load_balancer_arn = aws_lb.main.arn
+  port              = 80
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.main.arn
+  }
 }
 
 resource "aws_ecs_service" "main" {
   name            = "nginx"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.main.arn
-  desired_count   = 1
+  desired_count   = 2
 
   deployment_minimum_healthy_percent = 100
   deployment_maximum_percent         = 200
@@ -205,13 +230,18 @@ resource "aws_ecs_service" "main" {
     assign_public_ip = true
   }
 
+  // TODO: Container Name
   load_balancer {
     target_group_arn = aws_lb_target_group.main.arn
-    container_name   = "nginx"
+    container_name   = "php-tasks"
     container_port   = 80
   }
 
   lifecycle {
     ignore_changes = [desired_count]
   }
+
+  depends_on = [
+    aws_lb_listener.main
+  ]
 }
