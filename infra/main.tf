@@ -183,13 +183,13 @@ resource "aws_ecs_task_definition" "main" {
   ])
 }
 
-# resource "aws_lb_target_group" "main" {
-#   name        = "main"
-#   port        = 80
-#   protocol    = "HTTP"
-#   target_type = "ip"
-#   vpc_id      = aws_vpc.main.id
-# }
+resource "aws_lb_target_group" "main" {
+  name        = "main"
+  port        = 80
+  protocol    = "HTTP"
+  target_type = "ip"
+  vpc_id      = aws_vpc.main.id
+}
 
 resource "aws_ecs_service" "main" {
   name            = "nginx"
@@ -205,11 +205,11 @@ resource "aws_ecs_service" "main" {
     assign_public_ip = true
   }
 
-  # load_balancer {
-  #   target_group_arn = aws_lb_target_group.main.arn
-  #   container_name   = "nginx"
-  #   container_port   = 80
-  # }
+  load_balancer {
+    target_group_arn = aws_lb_target_group.main.arn
+    container_name   = "nginx"
+    container_port   = 80
+  }
 
   lifecycle {
     ignore_changes = [desired_count]
