@@ -249,7 +249,7 @@ resource "aws_ecs_service" "main" {
 
   network_configuration {
     subnets          = [aws_subnet.subnet1.id, aws_subnet.subnet2.id, aws_subnet.subnet3.id]
-    assign_public_ip = true
+    assign_public_ip = false
   }
 
   // TODO: Container Name
