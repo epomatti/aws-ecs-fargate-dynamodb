@@ -171,12 +171,8 @@ resource "aws_ecs_task_definition" "main" {
       essential = true
       portMappings = [
         {
-          containerPort = 80
-          hostPort      = 80
-        },
-        {
-          containerPort = 443
-          hostPort      = 443
+          containerPort = 8080
+          hostPort      = 8080
         }
       ]
     }
@@ -185,16 +181,15 @@ resource "aws_ecs_task_definition" "main" {
 
 resource "aws_lb_target_group" "main" {
   name        = "main"
-  port        = 80
+  port        = 8080
   protocol    = "HTTP"
   target_type = "ip"
   vpc_id      = aws_vpc.main.id
 
-  # TODO: Health Check
-  # health_check {
-  #   enabled = true
-  #   path    = "/"
-  # }
+  health_check {
+    enabled = true
+    path    = "/health"
+  }
 }
 
 resource "aws_lb" "main" {
@@ -205,7 +200,7 @@ resource "aws_lb" "main" {
   subnets            = [aws_subnet.subnet1.id, aws_subnet.subnet2.id, aws_subnet.subnet3.id]
 }
 
-resource "aws_lb_listener" "main" {
+resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.main.arn
   port              = 80
   protocol          = "HTTP"
@@ -217,7 +212,7 @@ resource "aws_lb_listener" "main" {
 }
 
 resource "aws_ecs_service" "main" {
-  name            = "nginx"
+  name            = "php-service"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.main.arn
   desired_count   = 2
@@ -234,7 +229,7 @@ resource "aws_ecs_service" "main" {
   load_balancer {
     target_group_arn = aws_lb_target_group.main.arn
     container_name   = "php-tasks"
-    container_port   = 80
+    container_port   = 8080
   }
 
   lifecycle {
@@ -242,6 +237,6 @@ resource "aws_ecs_service" "main" {
   }
 
   depends_on = [
-    aws_lb_listener.main
+    aws_lb.main
   ]
 }
