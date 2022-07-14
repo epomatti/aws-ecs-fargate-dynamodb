@@ -43,6 +43,9 @@ Start the server:
 php -S localhost:8080 -t public public/index.php
 ```
 
+### Docker
+
 ```sh
 docker build -t ecs-php .
+docker run --rm -p 8080:8080 ecs-php
 ```

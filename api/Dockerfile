@@ -15,4 +15,5 @@ WORKDIR /usr/src/myapp
 COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
 RUN composer install --no-interaction --no-dev
 
-CMD [ "php", "./public/index.php" ]
+# CMD [ "php", "./public/index.php" ]
+CMD [ "php", "-S", "localhost:8080", "-t", "public", "./public/index.php" ]
