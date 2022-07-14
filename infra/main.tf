@@ -112,19 +112,19 @@ resource "aws_security_group_rule" "egress_all" {
   security_group_id = aws_default_security_group.main.id
 }
 
-resource "aws_subnet" "subnet1" {
+resource "aws_subnet" "public_subnet_1" {
   vpc_id            = aws_vpc.main.id
   cidr_block        = "10.0.0.0/24"
   availability_zone = var.availability_zone_1
 }
 
-resource "aws_subnet" "subnet2" {
+resource "aws_subnet" "public_subnet_2" {
   vpc_id            = aws_vpc.main.id
   cidr_block        = "10.0.10.0/24"
   availability_zone = var.availability_zone_2
 }
 
-resource "aws_subnet" "subnet3" {
+resource "aws_subnet" "public_subnet_3" {
   vpc_id            = aws_vpc.main.id
   cidr_block        = "10.0.20.0/24"
   availability_zone = var.availability_zone_3
