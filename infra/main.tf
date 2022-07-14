@@ -158,30 +158,30 @@ resource "aws_ecs_cluster_capacity_providers" "fargate" {
   }
 }
 
-# resource "aws_ecs_task_definition" "service" {
-#   family                   = "service"
-#   requires_compatibilities = ["FARGATE"]
-#   network_mode             = "awsvpc"
-#   cpu                      = 1024
-#   memory                   = 2048
-#   container_definitions = jsonencode([
-#     {
-#       name      = "nginx"
-#       image     = "docker.io/nginx:latest"
-#       essential = true
-#       portMappings = [
-#         {
-#           containerPort = 80
-#           hostPort      = 80
-#         },
-#         {
-#           containerPort = 443
-#           hostPort      = 443
-#         }
-#       ]
-#     }
-#   ])
-# }
+resource "aws_ecs_task_definition" "main" {
+  family                   = "php-tasks"
+  requires_compatibilities = ["FARGATE"]
+  network_mode             = "awsvpc"
+  cpu                      = 1024
+  memory                   = 2048
+  container_definitions = jsonencode([
+    {
+      name      = "nginx"
+      image     = "docker.io/nginx:latest"
+      essential = true
+      portMappings = [
+        {
+          containerPort = 80
+          hostPort      = 80
+        },
+        {
+          containerPort = 443
+          hostPort      = 443
+        }
+      ]
+    }
+  ])
+}
 
 # resource "aws_lb_target_group" "main" {
 #   name        = "main"
