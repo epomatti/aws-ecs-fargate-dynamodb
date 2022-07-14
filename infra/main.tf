@@ -40,6 +40,10 @@ resource "aws_vpc" "main" {
 
   # Enable DNS hostnames 
   enable_dns_hostnames = true
+
+  tags = {
+    Name = "vpc-tasks"
+  }
 }
 
 resource "aws_internet_gateway" "main" {
@@ -77,9 +81,25 @@ resource "aws_security_group_rule" "egress_all" {
   security_group_id = aws_default_security_group.main.id
 }
 
-resource "aws_subnet" "main" {
+resource "aws_subnet" "subnet1" {
   vpc_id     = aws_vpc.main.id
   cidr_block = "10.0.0.0/24"
+
+  # Auto-assign public IPv4 address
+  map_public_ip_on_launch = true
+}
+
+resource "aws_subnet" "subnet2" {
+  vpc_id     = aws_vpc.main.id
+  cidr_block = "10.0.10.0/24"
+
+  # Auto-assign public IPv4 address
+  map_public_ip_on_launch = true
+}
+
+resource "aws_subnet" "subnet3" {
+  vpc_id     = aws_vpc.main.id
+  cidr_block = "10.0.20.0/24"
 
   # Auto-assign public IPv4 address
   map_public_ip_on_launch = true
@@ -130,62 +150,62 @@ resource "aws_ecs_cluster_capacity_providers" "fargate" {
   capacity_providers = ["FARGATE"]
 
   default_capacity_provider_strategy {
-    base              = 1
-    weight            = 100
     capacity_provider = "FARGATE"
+    # Minimum number of tasks (defaults to 0)
+    base = 1
+    # Percentage of tasks that should use this capacity provider (defauls to 0)
+    weight = 100
   }
 }
 
-resource "aws_ecs_task_definition" "service" {
-  family                   = "service"
-  requires_compatibilities = ["FARGATE"]
-  network_mode             = "awsvpc"
-  cpu                      = 1024
-  memory                   = 2048
-  container_definitions = jsonencode([
-    {
-      name      = "nginx"
-      image     = "docker.io/nginx:latest"
-      essential = true
-      portMappings = [
-        {
-          containerPort = 80
-          hostPort      = 80
-        },
-        {
-          containerPort = 443
-          hostPort      = 443
-        }
-      ]
-    }
-  ])
-}
+# resource "aws_ecs_task_definition" "service" {
+#   family                   = "service"
+#   requires_compatibilities = ["FARGATE"]
+#   network_mode             = "awsvpc"
+#   cpu                      = 1024
+#   memory                   = 2048
+#   container_definitions = jsonencode([
+#     {
+#       name      = "nginx"
+#       image     = "docker.io/nginx:latest"
+#       essential = true
+#       portMappings = [
+#         {
+#           containerPort = 80
+#           hostPort      = 80
+#         },
+#         {
+#           containerPort = 443
+#           hostPort      = 443
+#         }
+#       ]
+#     }
+#   ])
+# }
 
-resource "aws_lb_target_group" "main" {
-  name        = "main"
-  port        = 80
-  protocol    = "HTTP"
-  target_type = "ip"
-  vpc_id      = aws_vpc.main.id
-}
+# resource "aws_lb_target_group" "main" {
+#   name        = "main"
+#   port        = 80
+#   protocol    = "HTTP"
+#   target_type = "ip"
+#   vpc_id      = aws_vpc.main.id
+# }
 
-resource "aws_ecs_service" "nginx-service" {
-  name            = "nginx"
-  cluster         = aws_ecs_cluster.main.id
-  task_definition = aws_ecs_task_definition.service.arn
-  desired_count   = 1
+# resource "aws_ecs_service" "nginx-service" {
+#   name            = "nginx"
+#   cluster         = aws_ecs_cluster.main.id
+#   task_definition = aws_ecs_task_definition.service.arn
+#   desired_count   = 1
 
-  network_configuration {
-    subnets          = [aws_subnet.main.id]
-    assign_public_ip = true
-  }
+#   network_configuration {
+#     subnets          = [aws_subnet.subnet1.id, aws_subnet.subnet2.id, aws_subnet.subnet3.id]
+#     assign_public_ip = true
+#   }
 
-  
+#   load_balancer {
+#     target_group_arn = aws_lb_target_group.main.arn
+#     container_name   = "nginx"
+#     container_port   = 80
+#   }
 
-  load_balancer {
-    target_group_arn = aws_lb_target_group.main.arn
-    container_name   = "nginx"
-    container_port   = 80
-  }
-
-}
+# }
