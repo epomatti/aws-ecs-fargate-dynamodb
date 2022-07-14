@@ -22,6 +22,11 @@ $app = AppFactory::create();
 $app->addRoutingMiddleware();
 $errorMiddleware = $app->addErrorMiddleware(true, true, true);
 
+$app->get('/health', function (Request $request, Response $response, array $args) {
+    $response->getBody()->write("Ok");
+    return $response;
+});
+
 $app->post('/tasks', function (Request $request, Response $response, array $args) use ($sharedConfig) {
 
     $json = $request->getBody();
