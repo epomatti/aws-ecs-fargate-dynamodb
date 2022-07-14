@@ -82,10 +82,10 @@ resource "aws_default_security_group" "main" {
   vpc_id = aws_vpc.main.id
 }
 
-resource "aws_security_group_rule" "ingress_all" {
+resource "aws_security_group_rule" "ingress_http" {
   type              = "ingress"
-  from_port         = 0
-  to_port           = 65535
+  from_port         = 8080
+  to_port           = 8080
   protocol          = "tcp"
   cidr_blocks       = ["0.0.0.0/0"]
   security_group_id = aws_default_security_group.main.id
@@ -104,27 +104,32 @@ resource "aws_subnet" "subnet1" {
   vpc_id            = aws_vpc.main.id
   cidr_block        = "10.0.0.0/24"
   availability_zone = var.availability_zone_1
-
-  # Auto-assign public IPv4 address
-  map_public_ip_on_launch = true
 }
 
 resource "aws_subnet" "subnet2" {
   vpc_id            = aws_vpc.main.id
   cidr_block        = "10.0.10.0/24"
   availability_zone = var.availability_zone_2
-
-  # Auto-assign public IPv4 address
-  map_public_ip_on_launch = true
 }
 
 resource "aws_subnet" "subnet3" {
   vpc_id            = aws_vpc.main.id
   cidr_block        = "10.0.20.0/24"
   availability_zone = var.availability_zone_3
+}
 
-  # Auto-assign public IPv4 address
-  map_public_ip_on_launch = true
+### Gateway Endpoints ###
+
+resource "aws_route_table" "private" {
+  vpc_id = aws_vpc.main.id
+}
+
+resource "aws_vpc_endpoint" "dynamodb" {
+  vpc_id            = aws_vpc.main.id
+  service_name      = "com.amazonaws.sa-east-1.dynamodb"
+  vpc_endpoint_type = "Gateway"
+  auto_accept       = true
+  route_table_ids   = [aws_route_table.private.id]
 }
 
 ### Permissions ###
@@ -153,7 +158,7 @@ resource "aws_iam_role_policy_attachment" "dynamodb_full_access" {
 }
 
 resource "aws_iam_instance_profile" "main" {
-  name = "beanstalk-test-profile"
+  name = "ecs-tasksapp-test-profile"
   role = aws_iam_role.main.id
 }
 
@@ -254,6 +259,12 @@ resource "aws_ecs_service" "main" {
     container_port   = 8080
   }
 
+  capacity_provider_strategy {
+    capacity_provider = "FARGATE"
+    base              = 1
+    weight            = 100
+  }
+
   lifecycle {
     ignore_changes = [desired_count]
   }
@@ -261,4 +272,11 @@ resource "aws_ecs_service" "main" {
   depends_on = [
     aws_lb.main
   ]
+}
+
+### Outputs ###
+
+output "lb_dns" {
+  value     = aws_lb.main.dns_name
+  sensitive = false
 }
