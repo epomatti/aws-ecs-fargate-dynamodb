@@ -67,19 +67,31 @@ resource "aws_vpc" "main" {
 
 resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
+
+  tags = {
+    Name = "igtw-tasks"
+  }
 }
 
-resource "aws_default_route_table" "internet" {
+resource "aws_default_route_table" "main" {
   default_route_table_id = aws_vpc.main.default_route_table_id
 
   route {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.main.id
   }
+
+  tags = {
+    Name = "rt-tasks"
+  }
 }
 
 resource "aws_default_security_group" "main" {
   vpc_id = aws_vpc.main.id
+
+  tags = {
+    Name = "sg-tasks"
+  }
 }
 
 resource "aws_security_group_rule" "ingress_http" {
@@ -120,17 +132,34 @@ resource "aws_subnet" "subnet3" {
 
 ### Gateway Endpoints ###
 
-resource "aws_route_table" "private" {
-  vpc_id = aws_vpc.main.id
-}
-
 resource "aws_vpc_endpoint" "dynamodb" {
   vpc_id            = aws_vpc.main.id
   service_name      = "com.amazonaws.sa-east-1.dynamodb"
   vpc_endpoint_type = "Gateway"
   auto_accept       = true
-  route_table_ids   = [aws_route_table.private.id]
+  route_table_ids   = [aws_default_route_table.main.id]
 }
+
+
+# ### NAT Gateway ###
+# resource "aws_eip" "nat_gateway" {
+#   vpc = true
+# }
+
+# resource "aws_nat_gateway" "nat1" {
+#   allocation_id = aws_eip.nat_gateway.id
+#   subnet_id     = aws_subnet.subnet1.id
+
+#   # To ensure proper ordering, it is recommended to add an explicit dependency
+#   # on the Internet Gateway for the VPC.
+#   depends_on = [aws_internet_gateway.main]
+# }
+
+# resource "aws_route" "nat_gateway" {
+#   route_table_id         = aws_default_route_table.main.id
+#   nat_gateway_id         = aws_nat_gateway.nat1.id
+#   destination_cidr_block = "0.0.0.0/0"
+# }
 
 ### Permissions ###
 
@@ -248,8 +277,7 @@ resource "aws_ecs_service" "main" {
   deployment_maximum_percent         = 200
 
   network_configuration {
-    subnets          = [aws_subnet.subnet1.id, aws_subnet.subnet2.id, aws_subnet.subnet3.id]
-    assign_public_ip = false
+    subnets = [aws_subnet.subnet1.id, aws_subnet.subnet2.id, aws_subnet.subnet3.id]
   }
 
   load_balancer {
