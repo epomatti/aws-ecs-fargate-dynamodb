@@ -1,12 +1,11 @@
-# aws-elastic-beanstalk-app
+# AWS Fargate DynamoDB
 
-## 
+## Running
 
-Setup Beanstalk config
-
-https://engineering.finleap.com/posts/2020-02-20-ecs-fargate-terraform/
-https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/command-options-general.html#command-options-general-autoscalinglaunchconfiguration
-https://automateinfra.com/2021/03/24/how-to-launch-aws-elastic-beanstalk-using-terraform/
+```sh
+terraform init
+terraform apply -auto-approve
+```
 
 ## Local Development
 
@@ -17,13 +16,7 @@ sudo apt install php8.1 -y
 ```
 
 Install composer:
-
-```sh
-php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-php -r "if (hash_file('sha384', 'composer-setup.php') === '55ce33d7678c5a611085589f1f3ddf8b3c52d662cd01d4ba75c0ee0459970c2200a51f492d557530c71c15d8dba01eae') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
-php composer-setup.php
-php -r "unlink('composer-setup.php');"
-```
+https://getcomposer.org/download/
 
 Add to path:
 
@@ -49,3 +42,9 @@ php -S localhost:8080 -t public public/index.php
 docker build -t ecs-php .
 docker run --rm -p 8080:8080 ecs-php
 ```
+
+## Reference
+
+https://engineering.finleap.com/posts/2020-02-20-ecs-fargate-terraform/
+https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/command-options-general.html#command-options-general-autoscalinglaunchconfiguration
+https://automateinfra.com/2021/03/24/how-to-launch-aws-elastic-beanstalk-using-terraform/
