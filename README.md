@@ -45,6 +45,8 @@ docker run --rm -p 8080:8080 ecs-php
 
 ## Reference
 
+```
 https://engineering.finleap.com/posts/2020-02-20-ecs-fargate-terraform/
 https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/command-options-general.html#command-options-general-autoscalinglaunchconfiguration
 https://automateinfra.com/2021/03/24/how-to-launch-aws-elastic-beanstalk-using-terraform/
+```
